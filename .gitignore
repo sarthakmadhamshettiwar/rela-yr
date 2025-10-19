@@ -2,3 +2,4 @@
 .env
 .vscode
 .DS_Store
+consumer-service/src/services/consumed_messages.json
