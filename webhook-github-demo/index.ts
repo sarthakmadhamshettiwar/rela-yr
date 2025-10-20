@@ -13,3 +13,5 @@ app.post('/webhook', (req: any, res: any) => {
 app.listen(3000, () => {
     console.log('Server is running on port 3000');
 });
+
+// TODO: understand about connection pooling as well

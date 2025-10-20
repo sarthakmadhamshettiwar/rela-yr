@@ -1,0 +1,35 @@
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://myuser:mypassword@localhost:5432/webhookdb"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Client {
+  id        Int     @id @default(autoincrement())
+  name      String
+  apiKey    String  @unique
+  repos     Repo[]
+}
+
+model Repo {
+  id        Int     @id @default(autoincrement())
+  client    Client  @relation(fields: [clientId], references: [id])
+  clientId  Int
+  name      String
+  source    String
+  events    Event[]
+}
+
+model Event {
+  id         Int      @id @default(autoincrement())
+  repo       Repo?    @relation(fields: [repoId], references: [id])
+  repoId     Int?
+  eventType  String
+  commitId   String?
+  payload    Json
+  metadata   Json
+  receivedAt DateTime @default(now())
+}

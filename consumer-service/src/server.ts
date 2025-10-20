@@ -1,5 +1,6 @@
 import { getKafkaConsumerWithConnection, runConsumer, subscribeToTopic } from './services/kafka';
 const TOPIC = process.env.KAFKA_TOPIC || 'github-webhooks';
+
 const startConsumerService = async () => {
     try { 
         const consumer = await getKafkaConsumerWithConnection();

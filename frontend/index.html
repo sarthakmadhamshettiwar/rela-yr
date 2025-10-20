@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webhook Replay System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-webhook"></i> Webhook Replay System</h1>
+                <div class="header-stats">
+                    <div class="stat-card">
+                        <span class="stat-number" id="totalEvents">0</span>
+                        <span class="stat-label">Total Events</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="recentEvents">0</span>
+                        <span class="stat-label">Last 24h</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-tab="events">
+                <i class="fas fa-list"></i> Events
+            </button>
+            <button class="tab-btn" data-tab="replay">
+                <i class="fas fa-redo"></i> Replay
+            </button>
+            <button class="tab-btn" data-tab="settings">
+                <i class="fas fa-cog"></i> Settings
+            </button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Events Tab -->
+            <div id="events" class="tab-content active">
+                <div class="content-header">
+                    <h2>Webhook Events</h2>
+                    <div class="controls">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="searchInput" placeholder="Search events...">
+                        </div>
+                        <select id="eventTypeFilter">
+                            <option value="">All Event Types</option>
+                            <option value="push">Push</option>
+                            <option value="pull_request">Pull Request</option>
+                            <option value="issues">Issues</option>
+                            <option value="release">Release</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="refreshEvents()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div class="events-container">
+                    <div id="eventsTable" class="events-table">
+                        <!-- Events will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Replay Tab -->
+            <div id="replay" class="tab-content">
+                <div class="content-header">
+                    <h2>Replay Webhooks</h2>
+                </div>
+                
+                <div class="replay-section">
+                    <div class="replay-card">
+                        <h3>Select Events to Replay</h3>
+                        <div class="replay-filters">
+                            <div class="filter-group">
+                                <label>Date Range:</label>
+                                <input type="datetime-local" id="startDate">
+                                <span>to</span>
+                                <input type="datetime-local" id="endDate">
+                            </div>
+                            <div class="filter-group">
+                                <label>Event Type:</label>
+                                <select id="replayEventType">
+                                    <option value="">All Types</option>
+                                    <option value="push">Push</option>
+                                    <option value="pull_request">Pull Request</option>
+                                    <option value="issues">Issues</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="replay-actions">
+                            <button class="btn btn-secondary" onclick="previewReplay()">
+                                <i class="fas fa-eye"></i> Preview
+                            </button>
+                            <button class="btn btn-primary" onclick="startReplay()">
+                                <i class="fas fa-play"></i> Start Replay
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="replay-status" id="replayStatus" style="display: none;">
+                        <h3>Replay Status</h3>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="status-info">
+                            <span id="replayProgress">0/0 events processed</span>
+                            <span id="replayTime">Estimated time: --</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings" class="tab-content">
+                <div class="content-header">
+                    <h2>System Settings</h2>
+                </div>
+                
+                <div class="settings-section">
+                    <div class="settings-card">
+                        <h3>Webhook Configuration</h3>
+                        <div class="setting-item">
+                            <label>Webhook URL:</label>
+                            <input type="text" id="webhookUrl" placeholder="https://your-domain.com/webhook" readonly>
+                            <button class="btn btn-small" onclick="copyWebhookUrl()">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <div class="setting-item">
+                            <label>Kafka Status:</label>
+                            <span class="status-indicator" id="kafkaStatus">
+                                <i class="fas fa-circle"></i> Checking...
+                            </span>
+                        </div>
+                        <div class="setting-item">
+                            <label>Database Status:</label>
+                            <span class="status-indicator" id="dbStatus">
+                                <i class="fas fa-circle"></i> Checking...
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>Event Retention</h3>
+                        <div class="setting-item">
+                            <label>Keep events for:</label>
+                            <select id="retentionPeriod">
+                                <option value="7">7 days</option>
+                                <option value="30" selected>30 days</option>
+                                <option value="90">90 days</option>
+                                <option value="365">1 year</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <button class="btn btn-danger" onclick="cleanupOldEvents()">
+                                <i class="fas fa-trash"></i> Cleanup Old Events
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Event Detail Modal -->
+        <div id="eventModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Event Details</h3>
+                    <button class="modal-close" onclick="closeModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="event-details" id="eventDetails">
+                        <!-- Event details will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+                    <button class="btn btn-primary" onclick="replayEvent()">
+                        <i class="fas fa-redo"></i> Replay This Event
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
