@@ -2,12 +2,6 @@ import express from 'express';
 import {getKafkaProducerWithConnection} from './services/kafka';
 import { getWebHookRouter } from './routes/webhook';
 
-// setting up db
-
-
-// making some router objects
-
-
 // setting up express server here 
 const app = express();
 app.use(express.json());

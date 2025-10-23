@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import { Producer } from 'kafkajs';
-import { getClientIdFromRepo } from '../utils/webhook/utils';
+import { getClientIdFromRepo, getEventFromPayload } from '../utils/webhook/utils';
 const topic = process.env.KAFKA_TOPIC || 'github-webhooks';
 
 export const getWebHookRouter = (producer: Producer) => {
@@ -8,25 +8,7 @@ export const getWebHookRouter = (producer: Producer) => {
     
     webHookRouter.post('/github', async(req: Request, res: Response) => {
         // all the requests coming to /webhook/github will be handled here
-        const payload = req.body;
-        const headers = req.headers;
-        const clientId = getClientIdFromRepo(payload?.repository?.owner.name || 'OWNER_NAME', payload?.repository?.name || 'REPO_NAME');
-        const eventId = headers['x-github-delivery'] as string;
-        const eventType = headers['x-github-event'] as string;
-        const commitId = payload?.after || payload?.head_commit?.id || null;
-        const event = {
-            event_id: eventId,
-            source: 'github',
-            client_id: clientId,
-            received_at: new Date().toISOString(),
-            payload,
-            metadata: {
-              event_type: eventType,
-              commit_id: commitId,
-              delivery_status: 'received',
-              delivery_attempts: 0
-            }
-          };
+        const event = getEventFromPayload(req);
         await producer.send({
             topic: topic,
             messages: [{ value: JSON.stringify(event) }],

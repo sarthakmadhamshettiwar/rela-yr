@@ -20,20 +20,3 @@ getSomeEvents(['id', 'eventType', 'metadata'])
 .catch((error) => {
     console.error("Error getting events: ", error);
 })
-
-// getSomeRepos(['id', 'repoId', 'eventType', 'metadata'])
-// .then((events) => {
-//     console.log("Events: ", events);
-// })
-// .catch((error) => {
-//     console.error("Error getting events: ", error);
-// })
-
-
-// getSomeClients(['id', 'repoId', 'eventType', 'metadata'])
-// .then((events) => {
-//     console.log("Events: ", events);
-// })
-// .catch((error) => {
-//     console.error("Error getting events: ", error);
-// })
