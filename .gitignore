@@ -1,6 +1,9 @@
-/node_modules
 .env
-.vscode
+
 .DS_Store
 consumer-service/src/services/consumed_messages.json
 /generated/prisma
+
+node_modules
+node_modules*/
+.DS_Store

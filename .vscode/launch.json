@@ -1,0 +1,62 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Producer Service",
+            "runtimeExecutable": "/Users/sarthakprashant/.nvm/versions/node/v20.19.6/bin/node",
+            "runtimeArgs": [
+                "-r",
+                "ts-node/register"
+            ],
+            "args": [
+                "${workspaceFolder}/producer-service/src/server.ts"
+            ],
+            "cwd": "${workspaceFolder}",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "env": {
+                "TS_NODE_PROJECT": "${workspaceFolder}/tsconfig.json"
+            }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Consumer Service",
+            "runtimeExecutable": "/Users/sarthakprashant/.nvm/versions/node/v20.19.6/bin/node",
+            "runtimeArgs": [
+                "-r",
+                "ts-node/register"
+            ],
+            "args": [
+                "${workspaceFolder}/consumer-service/src/server.ts"
+            ],
+            "cwd": "${workspaceFolder}",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "env": {
+                "TS_NODE_PROJECT": "${workspaceFolder}/tsconfig.json"
+            }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Current TS File",
+            "runtimeExecutable": "/Users/sarthakprashant/.nvm/versions/node/v20.19.6/bin/node",
+            "runtimeArgs": [
+                "-r",
+                "ts-node/register"
+            ],
+            "args": [
+                "${file}"
+            ],
+            "cwd": "${workspaceFolder}",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
+        }
+    ]
+}
