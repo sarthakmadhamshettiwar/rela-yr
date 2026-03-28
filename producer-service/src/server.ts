@@ -1,3 +1,5 @@
+process.env.KAFKAJS_NO_PARTITIONER_WARNING = '1';
+
 import express from 'express';
 import {getKafkaProducerWithConnection} from './services/kafka';
 import { getWebHookRouter } from './routes/webhook';
@@ -9,15 +11,13 @@ app.use(express.json());
 const startServer = async () => {
     try {
         const producer = await getKafkaProducerWithConnection();
-        console.log('Kafka connected successfully');
+        console.log('Producer running at http://localhost:3000');
 
         
         const webHookRouter = getWebHookRouter(producer);
         app.use('/webhook', webHookRouter);
 
-        app.listen(3000, () => {
-            console.log('PRODUCER running at 3000');
-        });
+        app.listen(3000);
 
     } catch (error) {
         console.error('Error connecting to Kafka:', error);

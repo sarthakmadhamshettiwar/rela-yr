@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '../../prisma/prisma';
+import { eventBus } from '../eventBus';
 
 const PRODUCER_URL = process.env.PRODUCER_URL || 'http://localhost:3000';
 
@@ -11,7 +12,8 @@ export const getApiRouter = (isKafkaConnected: () => boolean) => {
             const total = await prisma.event.count();
             const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
             const last24h = await prisma.event.count({ where: { receivedAt: { gte: yesterday } } });
-            res.json({ total, last24h });
+            const dead = await prisma.event.count({ where: { status: 'dead' } });
+            res.json({ total, last24h, dead });
         } catch {
             res.status(500).json({ error: 'Failed to fetch stats' });
         }
@@ -26,11 +28,38 @@ export const getApiRouter = (isKafkaConnected: () => boolean) => {
         res.json({ db: dbStatus, kafka: isKafkaConnected() ? 'online' : 'offline' });
     });
 
+    // SSE — must come before /events/:id
+    router.get('/events/stream', (req: Request, res: Response) => {
+        res.writeHead(200, {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+            'X-Accel-Buffering': 'no',
+        });
+
+        res.write('retry: 3000\n\n');
+
+        const sendEvent = (event: any) => {
+            res.write(`data: ${JSON.stringify(event)}\n\n`);
+        };
+
+        eventBus.on('new-event', sendEvent);
+
+        // Keepalive ping every 30s
+        const keepalive = setInterval(() => res.write(': ping\n\n'), 30_000);
+
+        req.on('close', () => {
+            clearInterval(keepalive);
+            eventBus.off('new-event', sendEvent);
+        });
+    });
+
     router.get('/events', async (req: Request, res: Response) => {
         try {
-            const { type, from, to } = req.query;
+            const { type, from, to, status } = req.query;
             const where: any = {};
             if (type) where.eventType = type;
+            if (status) where.status = status;
             if (from || to) {
                 where.receivedAt = {};
                 if (from) where.receivedAt.gte = new Date(from as string);
@@ -43,15 +72,13 @@ export const getApiRouter = (isKafkaConnected: () => boolean) => {
                 take: 200,
             });
 
-            const result = events.map(e => ({
+            res.json(events.map(e => ({
                 ...e,
                 repository:
                     (e.payload as any)?.repository?.full_name ||
                     (e.payload as any)?.repository?.name ||
                     'Unknown',
-            }));
-
-            res.json(result);
+            })));
         } catch (error) {
             console.error('Error fetching events:', error);
             res.status(500).json({ error: 'Failed to fetch events' });
@@ -98,6 +125,15 @@ export const getApiRouter = (isKafkaConnected: () => boolean) => {
         } catch (error) {
             console.error('Error replaying event:', error);
             res.status(500).json({ error: 'Failed to replay event' });
+        }
+    });
+
+    router.delete('/events/all', async (_req: Request, res: Response) => {
+        try {
+            const result = await prisma.event.deleteMany({});
+            res.json({ deleted: result.count });
+        } catch {
+            res.status(500).json({ error: 'Failed to delete all events' });
         }
     });
 

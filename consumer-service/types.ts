@@ -4,4 +4,5 @@ export interface WebhookEvent {
     commitId?: string;
     payload: any;
     metadata: any;
+    retryCount?: number;
 }

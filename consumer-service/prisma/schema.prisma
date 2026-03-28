@@ -31,5 +31,7 @@ model Event {
   commitId   String?
   payload    Json
   metadata   Json
+  status     String   @default("received")
+  retryCount Int      @default(0)
   receivedAt DateTime @default(now())
 }
