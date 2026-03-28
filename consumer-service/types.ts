@@ -1,6 +1,6 @@
 export interface WebhookEvent {
     repoId?: number;
-    eventType: string;
+    event_type: string;
     commitId?: string;
     payload: any;
     metadata: any;

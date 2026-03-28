@@ -3,10 +3,12 @@ import { WebhookEvent } from '../../types';
 
 export const insertEventsInDB = async (events: WebhookEvent[], prisma: PrismaClient) => {
     try {
+      // we need to write in multiple tables here
+      // 1. writing the payload in event table
       await prisma.event.createMany({
         data: events.map(e => ({
-          // repoId: e.repoId,
-          eventType: e.eventType,
+          repoId: e.repoId,
+          eventType: e.event_type,
           commitId: e.commitId,
           payload: e.payload,
           metadata: e.metadata,

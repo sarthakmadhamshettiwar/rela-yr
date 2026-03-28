@@ -11,11 +11,12 @@ const startServer = async () => {
         const producer = await getKafkaProducerWithConnection();
         console.log('Kafka connected successfully');
 
+        
         const webHookRouter = getWebHookRouter(producer);
         app.use('/webhook', webHookRouter);
 
         app.listen(3000, () => {
-            console.log('Server is running on port 3000');
+            console.log('PRODUCER running at 3000');
         });
 
     } catch (error) {
